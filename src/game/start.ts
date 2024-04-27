@@ -36,7 +36,11 @@ export default async function Start(gameChannel: TextChannel, interaction: Comma
 					'Detective',
 					'Citizen'
 				].map((v) => new StringSelectMenuOptionBuilder().setLabel(v).setValue(v.toLowerCase()).toJSON())
-	)}
+    )
+  }
+  
+  
+  let yesAmount = 0;
 
   await gameChannel.send({ embeds: [InitialStuff.startEmbed] })
 
@@ -48,20 +52,18 @@ export default async function Start(gameChannel: TextChannel, interaction: Comma
   })
 
   YesNoCollector.on('collect', async (YesNoCollectedInteraction) => {
-    let yesAmount = 0;
     if (YesNoCollectedInteraction.customId === 'yes') {
       YesNoCollectedInteraction.deferUpdate()
       // if (!(users.find((user) => user.id === YesNoCollectedInteraction.user.id))) return;
       // console.log(!(users.find((user) => user.id === YesNoCollectedInteraction.user.id)))
-      yesAmount++
+      yesAmount += 1 
       if (yesAmount === (users.length + 1)) {
         YesNoCollector.stop();
         await ReadyMessage.edit({ embeds: [new EmbedBuilder().setTitle('Everyone is Ready').setColor('Green')] })
         await gameChannel.send({ content: 'Please Pick a role', components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(InitialStuff.RoleSelect)] })
       } else {
-      YesNoCollector.stop()
-      const updatedEmbed = InitialStuff.embed.setDescription(`**${yesAmount}** out of **${users.length}** players are ready.`);
-			await ReadyMessage?.edit({ embeds: [updatedEmbed], components: [InitialStuff.yesnorow] });
+        const updatedEmbed = InitialStuff.embed.setDescription(`**${yesAmount}** out of **${users.length}** players are ready.`);
+        await ReadyMessage?.edit({ embeds: [updatedEmbed], components: [InitialStuff.yesnorow] });
       } 
     } else if (YesNoCollectedInteraction.customId === 'no') {
       YesNoCollectedInteraction.deferUpdate()
