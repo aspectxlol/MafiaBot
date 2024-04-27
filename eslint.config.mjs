@@ -1,4 +1,15 @@
-{
+import path from "path";
+import { fileURLToPath } from "url";
+import { FlatCompat } from "@eslint/eslintrc";
+import pluginJs from "@eslint/js";
+
+// Mimic CommonJS variables for compatibility (not needed in CommonJS)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const compat = new FlatCompat({ baseDirectory: __dirname, recommendedConfig: pluginJs.configs.recommended });
+
+const baseConfig = {
   "extends": "eslint:recommended",
   "env": {
     "node": true,
@@ -112,3 +123,8 @@
     "yoda": "error"
   }
 }
+
+export default [
+  ...compat.extends("standard-with-typescript"),
+  baseConfig.rules, // Merge custom rules from baseConfig
+];
