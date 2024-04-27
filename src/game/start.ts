@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, Embed, EmbedBuilder, SelectMenuBuilder, SelectMenuOptionBuilder, StringSelectMenuBuilder, TextChannel, User } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, Embed, EmbedBuilder, SelectMenuBuilder, SelectMenuOptionBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, TextChannel, User } from "discord.js";
 import { QuickDB } from "quick.db";
 
 export default async function Start(gameChannel: TextChannel, interaction: CommandInteraction, db: QuickDB, users: User[]) {
@@ -35,7 +35,7 @@ export default async function Start(gameChannel: TextChannel, interaction: Comma
 					'Doctor',
 					'Detective',
 					'Citizen'
-				].map((v) => new SelectMenuOptionBuilder().setLabel(v).setValue(v.toLowerCase()).toJSON())
+				].map((v) => new StringSelectMenuOptionBuilder().setLabel(v).setValue(v.toLowerCase()).toJSON())
 	)}
 
   await gameChannel.send({ embeds: [InitialStuff.startEmbed] })
@@ -50,17 +50,23 @@ export default async function Start(gameChannel: TextChannel, interaction: Comma
   YesNoCollector.on('collect', async (YesNoCollectedInteraction) => {
     let yesAmount = 0;
     if (YesNoCollectedInteraction.customId === 'yes') {
-      if (!(users.find((user) => user.id === YesNoCollectedInteraction.user.id))) return;
+      YesNoCollectedInteraction.deferUpdate()
+      // if (!(users.find((user) => user.id === YesNoCollectedInteraction.user.id))) return;
+      // console.log(!(users.find((user) => user.id === YesNoCollectedInteraction.user.id)))
       yesAmount++
       if (yesAmount === (users.length + 1)) {
         YesNoCollector.stop();
         await ReadyMessage.edit({ embeds: [new EmbedBuilder().setTitle('Everyone is Ready').setColor('Green')] })
         await gameChannel.send({ content: 'Please Pick a role', components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(InitialStuff.RoleSelect)] })
-      } 
-    } else if (YesNoCollectedInteraction.customId === 'no') {
+      } else {
       YesNoCollector.stop()
       const updatedEmbed = InitialStuff.embed.setDescription(`**${yesAmount}** out of **${users.length}** players are ready.`);
 			await ReadyMessage?.edit({ embeds: [updatedEmbed], components: [InitialStuff.yesnorow] });
+      } 
+    } else if (YesNoCollectedInteraction.customId === 'no') {
+      YesNoCollectedInteraction.deferUpdate()
+      const noEmbed = new EmbedBuilder().setTitle('one of you fuckers clicked on the no button').setColor('Red')
+      await ReadyMessage.edit({ embeds: [noEmbed], content: '' })
     }
 
     YesNoCollector.on('end', async (collected, reason) => {

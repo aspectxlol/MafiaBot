@@ -54,11 +54,13 @@ export default async function Setup(interaction: CommandInteraction, db: QuickDB
         ConformationMssage?.delete()
         YesNoCollector.stop()
         UserSelectCollector.stop()
-        
+
         const gameChannel = await interaction.guild?.channels.create({
           name: `${interaction.options.get('title')?.value}`,
           parent: (await interaction.guild.channels.fetch(`${await db.get(`${interaction.guild.id}.CatChannel`)}`)) as CategoryChannel
         }) as TextChannel
+
+        RepliedMessage.edit({ content: `created game channel ${gameChannel.toString()}` })
 
         await Start(gameChannel, interaction, db, UserSelectCollectedInteraction.users.map((v) => v))
       } else if (YesNoCollectedInteraction.customId === 'no') {
